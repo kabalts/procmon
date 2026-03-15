@@ -12,6 +12,7 @@
 #include <time.h>
 #include <errno.h>
 #include <ctype.h>
+#include <fcntl.h>
 
 #define MAX_PATH 256
 #define MAX_BUF 1024

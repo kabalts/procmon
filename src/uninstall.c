@@ -1,23 +1,29 @@
 #include "../include/procmon.h"
 
-int uninstall_procmon() {
-    printf("确定要卸载 procmon 吗？此操作不可恢复！(Y/n)：");
-    char c;
-    scanf("%c", &c);
+int uninstall_procmon(void) {
+    char ch;
 
-    if (c != 'Y' && c != 'y') {
+    printf("\n===================================\n");
+    printf("        卸载 procmon 工具\n");
+    printf("===================================\n");
+    printf("确定要卸载吗？[Y/n]：");
+
+    scanf(" %c", &ch);
+    if (ch != 'Y' && ch != 'y') {
         printf("卸载已取消。\n");
         return 0;
     }
 
-    printf("正在停止 procmon 守护进程...\n");
-    system("sudo pkill -f procmon");
+    // 停止进程
+    printf("正在停止 procmon 进程...\n");
+    system("sudo pkill -f procmon 2>/dev/null");
 
+    // 删除文件
     printf("正在删除程序...\n");
-    unlink("/usr/local/bin/procmon");
-    unlink("/etc/procmon.conf");
-    unlink("/var/log/procmon.log");
+    system("sudo rm -f /usr/local/bin/procmon");
+    system("sudo rm -f /etc/procmon.conf");
+    system("sudo rm -f /var/log/procmon.log");
 
-    printf("✅ 卸载成功！\n");
+    printf("卸载完成！\n");
     return 0;
 }

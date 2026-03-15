@@ -1,5 +1,6 @@
 #include "../include/procmon.h"
 
+// 主界面
 void show_help(void) {
     printf("=== procmon 高级进程管理工具 ===\n");
     printf("  -l, --list          显示所有进程\n");
@@ -10,10 +11,11 @@ void show_help(void) {
     printf("  -z, --zombie         查看僵尸数量\n");
     printf("  -Z, --killzombie     清理所有僵尸\n");
     printf("  -d, --daemon         后台守护\n");
-    printf("  --uninstall          卸载工具\n");
+    printf("  --uninstall          卸载procmon(请在root权限下运行,即sudo procmon --uninstall)\n");
     printf("  -h, --help           帮助\n");
 }
 
+// 监控进程
 void monitor_process(MonitorConfig *cfg) {
     log_message("INFO", "进程监控启动");
     while (1) {
@@ -33,14 +35,20 @@ void monitor_process(MonitorConfig *cfg) {
 }
 
 int main(int argc, char *argv[]) {
-    if (argc < 2) { show_help(); return 0; }
+    if (argc < 2) 
+    { 
+        show_help(); 
 
-    int show_user = 0, show_system = 0;
+        return 0; 
+    }
+
+    int show_user = 0, show_system = 0, show_zombie = 0;
 
     if (argc >= 3) {
         if (!strcmp(argv[1], "-l")) {
             if (!strcmp(argv[2], "-u")) show_user = 1;
             if (!strcmp(argv[2], "-s")) show_system = 1;
+            if (!strcmp(argv[2], "-z")) show_zombie = 1;
         }
     }
 
@@ -48,15 +56,46 @@ int main(int argc, char *argv[]) {
         ProcInfo list[MAX_PROC];
         int cnt = 0;
         list_all_process(list, &cnt);
-        printf("PID\t名称\t状态\t类型\n");
 
+        // 僵尸进程列表专用表头
+        if (show_zombie) {
+            printf("==== 僵尸进程详细列表 ====\n");
+            printf("%-8s %-12s %-8s %-10s %-8s\n", "PID", "名称", "状态", "类型", "父进程PID");
+            printf("-----------------------------------------------\n");
+        } else {
+            // 普通进程列表表头
+            printf("%-8s %-12s %-8s %-10s\n", "PID", "名称", "状态", "类型");
+            printf("---------------------------------------------\n");
+        }
+
+        int zombie_count = 0;
         for (int i=0; i<cnt; i++) {
             int is_sys = (list[i].uid == 0);
+            
+            // 过滤逻辑
             if (show_user && is_sys) continue;
             if (show_system && !is_sys) continue;
+            if (show_zombie && list[i].state[0] != 'Z') continue;
 
             const char *type = is_sys ? "系统进程" : "用户进程";
-            printf("%d\t%s\t%s\t%s\n", list[i].pid, list[i].name, list[i].state, type);
+            if (show_zombie) {
+                // 僵尸进程额外显示父进程PID
+                printf("%-8d %-12s %-8s %-10s %-8d\n", 
+                       list[i].pid, list[i].name, list[i].state, type, list[i].ppid);
+                zombie_count++;
+            } else {
+                printf("%-8d %-12s %-8s %-10s\n", 
+                       list[i].pid, list[i].name, list[i].state, type);
+            }
+        }
+
+        // 僵尸进程列表末尾显示统计
+        if (show_zombie) {
+            printf("-----------------------------------------------\n");
+            printf("僵尸进程总数：%d\n", zombie_count);
+            if (zombie_count == 0) {
+                printf("提示：当前系统无僵尸进程 ✅\n");
+            }
         }
         return 0;
     }
