@@ -6,6 +6,7 @@ void show_help(void) {
     printf("  -l, --list          显示所有进程\n");
     printf("  -l -u                仅显示用户进程\n");
     printf("  -l -s                仅显示系统进程\n");
+    printf("  -l -z                仅显示僵尸进程\n");
     printf("  -k, --kill PID       杀死进程\n");
     printf("  -K, --killall 名称   批量杀死进程\n");
     printf("  -z, --zombie         查看僵尸数量\n");

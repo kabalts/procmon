@@ -37,14 +37,14 @@ typedef struct {
     int restart_count;
 } MonitorConfig;
 
-void log_message(const char *level, const char *msg);
+int log_message(const char *level, const char *msg);
 int list_all_process(ProcInfo *proc_list, int *count);
 int kill_process(pid_t pid);
 int kill_process_by_name(const char *name);
 int find_process_by_name(const char *name, pid_t *pid_list, int *count);
 int check_zombie_process(ProcInfo *proc_list, int count);
 int kill_all_zombies(void);
-void create_daemon(void);
+int create_daemon(void);
 int load_config(MonitorConfig *cfg);
 void monitor_process(MonitorConfig *cfg);
 int uninstall_procmon(void);
