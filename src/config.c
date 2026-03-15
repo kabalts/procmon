@@ -7,7 +7,8 @@ int load_config(MonitorConfig *cfg) {
     char buf[MAX_BUF];
     while (fgets(buf, sizeof(buf), fp)) {
         if (buf[0] == '#' || strlen(buf) < 3) continue;
-        if (strstr(buf, "process_name")) sscanf(buf, "process_name=%s", cfg->monitor_name);
+        if (strstr(buf, "process_name")) sscanf(buf, "process_name=%[^\n]", cfg->monitor_name);
+        if (strstr(buf, "start_command")) sscanf(buf, "start_command=%[^\n]", cfg->start_cmd);
         if (strstr(buf, "auto_restart")) sscanf(buf, "auto_restart=%d", &cfg->auto_restart);
         if (strstr(buf, "interval")) sscanf(buf, "interval=%d", &cfg->check_interval);
         if (strstr(buf, "max_restart")) sscanf(buf, "max_restart=%d", &cfg->max_restart);

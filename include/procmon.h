@@ -24,10 +24,12 @@ typedef struct {
     pid_t ppid;
     char name[64];
     char state[16];
+    uid_t uid;
 } ProcInfo;
 
 typedef struct {
     char monitor_name[64];
+    char start_cmd[128];
     int auto_restart;
     int check_interval;
     int max_restart;
@@ -40,8 +42,10 @@ int kill_process(pid_t pid);
 int kill_process_by_name(const char *name);
 int find_process_by_name(const char *name, pid_t *pid_list, int *count);
 int check_zombie_process(ProcInfo *proc_list, int count);
-void create_daemon();
+int kill_all_zombies(void);
+void create_daemon(void);
 int load_config(MonitorConfig *cfg);
 void monitor_process(MonitorConfig *cfg);
+int uninstall_procmon(void);
 
 #endif

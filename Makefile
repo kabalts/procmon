@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -Iinclude
-SRC = src/main.c src/process.c src/log.c src/daemon.c src/config.c
+SRC = src/main.c src/process.c src/log.c src/daemon.c src/config.c src/uninstall.c
 OBJ = $(SRC:.c=.o)
 TARGET = procmon
 

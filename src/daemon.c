@@ -1,6 +1,6 @@
 #include "../include/procmon.h"
 
-void create_daemon() {
+void create_daemon(void) {
     pid_t pid = fork();
     if (pid < 0) exit(EXIT_FAILURE);
     if (pid > 0) exit(EXIT_SUCCESS);

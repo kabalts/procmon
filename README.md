@@ -14,12 +14,3 @@
 make
 sudo make install
 ```
-
-## 一键卸载
-```bash
-sudo pkill -f procmon
-sudo rm -f /usr/local/bin/procmon
-sudo rm -f /etc/procmon.conf
-sudo rm -f /var/log/procmon.log
-echo "procmon 已完全卸载"
-```

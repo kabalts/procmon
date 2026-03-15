@@ -1,13 +1,17 @@
 #include "../include/procmon.h"
 
-void show_help() {
+void show_help(void) {
     printf("=== procmon 高级进程管理工具 ===\n");
-    printf("  -l, --list        列出所有进程\n");
-    printf("  -k, --kill PID    杀死指定进程\n");
-    printf("  -K, --killall 名称 批量杀死进程\n");
-    printf("  -z, --zombie      检测僵尸进程\n");
-    printf("  -d, --daemon      后台守护监控\n");
-    printf("  -h, --help        帮助信息\n");
+    printf("  -l, --list          显示所有进程\n");
+    printf("  -l -u                仅显示用户进程\n");
+    printf("  -l -s                仅显示系统进程\n");
+    printf("  -k, --kill PID       杀死进程\n");
+    printf("  -K, --killall 名称   批量杀死进程\n");
+    printf("  -z, --zombie         查看僵尸数量\n");
+    printf("  -Z, --killzombie     清理所有僵尸\n");
+    printf("  -d, --daemon         后台守护\n");
+    printf("  --uninstall          卸载工具\n");
+    printf("  -h, --help           帮助\n");
 }
 
 void monitor_process(MonitorConfig *cfg) {
@@ -19,9 +23,9 @@ void monitor_process(MonitorConfig *cfg) {
 
         if (cnt == 0 && cfg->auto_restart && cfg->restart_count < cfg->max_restart) {
             char msg[128];
-            snprintf(msg, sizeof(msg), "进程[%s]崩溃，尝试重启", cfg->monitor_name);
+            snprintf(msg, sizeof(msg), "进程[%s]崩溃，自动重启", cfg->monitor_name);
             log_message("WARN", msg);
-            system(cfg->monitor_name);
+            system(cfg->start_cmd);
             cfg->restart_count++;
         }
         sleep(cfg->check_interval);
@@ -31,39 +35,67 @@ void monitor_process(MonitorConfig *cfg) {
 int main(int argc, char *argv[]) {
     if (argc < 2) { show_help(); return 0; }
 
-    if (!strcmp(argv[1], "-l") || !strcmp(argv[1], "--list")) {
+    int show_user = 0, show_system = 0;
+
+    if (argc >= 3) {
+        if (!strcmp(argv[1], "-l")) {
+            if (!strcmp(argv[2], "-u")) show_user = 1;
+            if (!strcmp(argv[2], "-s")) show_system = 1;
+        }
+    }
+
+    if (!strcmp(argv[1], "-l")) {
         ProcInfo list[MAX_PROC];
         int cnt = 0;
         list_all_process(list, &cnt);
-        printf("PID\t名称\t状态\n");
+        printf("PID\t名称\t状态\t类型\n");
+
         for (int i=0; i<cnt; i++) {
-            printf("%d\t%s\t%s\n", list[i].pid, list[i].name, list[i].state);
+            int is_sys = (list[i].uid == 0);
+            if (show_user && is_sys) continue;
+            if (show_system && !is_sys) continue;
+
+            const char *type = is_sys ? "系统进程" : "用户进程";
+            printf("%d\t%s\t%s\t%s\n", list[i].pid, list[i].name, list[i].state, type);
         }
+        return 0;
     }
-    else if (!strcmp(argv[1], "-k") && argc == 3) {
+
+    if (!strcmp(argv[1], "--uninstall")) {
+        uninstall_procmon();
+        return 0;
+    }
+
+    if (!strcmp(argv[1], "-k") && argc == 3) {
         pid_t pid = atoi(argv[2]);
         kill_process(pid);
-        printf("已杀死进程：%d\n", pid);
+        printf("已杀死：%d\n", pid);
     }
     else if (!strcmp(argv[1], "-K") && argc == 3) {
         int n = kill_process_by_name(argv[2]);
         printf("已杀死 %d 个 %s 进程\n", n, argv[2]);
     }
-    else if (!strcmp(argv[1], "-z") || !strcmp(argv[1], "--zombie")) {
+    else if (!strcmp(argv[1], "-z")) {
         ProcInfo list[MAX_PROC];
         int cnt = 0;
         list_all_process(list, &cnt);
         printf("僵尸进程数量：%d\n", check_zombie_process(list, cnt));
     }
-    else if (!strcmp(argv[1], "-d") || !strcmp(argv[1], "--daemon")) {
+    else if (!strcmp(argv[1], "-Z")) {
+        int num = kill_all_zombies();
+        printf("已清理僵尸：%d\n", num);
+        log_message("INFO", "一键清理僵尸");
+    }
+    else if (!strcmp(argv[1], "-d")) {
         MonitorConfig cfg;
         memset(&cfg, 0, sizeof(cfg));
         load_config(&cfg);
         create_daemon();
         monitor_process(&cfg);
     }
-    else if (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help")) {
+    else if (!strcmp(argv[1], "-h")) {
         show_help();
     }
+
     return 0;
 }

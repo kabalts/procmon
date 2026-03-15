@@ -24,6 +24,19 @@ int list_all_process(ProcInfo *proc_list, int *count) {
         sscanf(buf, "%d %s %s %d", &p.pid, p.name, p.state, &p.ppid);
         p.name[strlen(p.name)-1] = 0;
         memmove(p.name, p.name+1, strlen(p.name));
+
+        snprintf(path, sizeof(path), "/proc/%d/status", pid);
+        fp = fopen(path, "r");
+        if (fp) {
+            while (fgets(buf, sizeof(buf), fp)) {
+                if (strstr(buf, "Uid:")) {
+                    sscanf(buf, "Uid:\t%u", &p.uid);
+                    break;
+                }
+            }
+            fclose(fp);
+        }
+
         proc_list[idx++] = p;
     }
 
@@ -73,4 +86,19 @@ int check_zombie_process(ProcInfo *proc_list, int count) {
         if (proc_list[i].state[0] == 'Z') zombies++;
     }
     return zombies;
+}
+
+int kill_all_zombies(void) {
+    ProcInfo list[MAX_PROC];
+    int count = 0;
+    list_all_process(list, &count);
+    int cleaned = 0;
+
+    for (int i=0; i<count; i++) {
+        if (list[i].state[0] == 'Z') {
+            kill_process(list[i].ppid);
+            cleaned++;
+        }
+    }
+    return cleaned;
 }
