@@ -9,8 +9,17 @@
 - 后台守护模式
 - 配置文件支持
 
-## 编译安装
+## 已知支持的系统
+- Ubuntu 24.04
+
+## 软件依赖
+- gcc   13.3.0
+- make  4.3
+- libc6-dev 2.39
+
+## 使用方式
 ```bash
-make
-sudo make install
+make                #   编译
+sudo make install   #   安装
+sudo make uninstall #   卸载
 ```
