@@ -47,6 +47,5 @@ int kill_all_zombies(void);
 int create_daemon(void);
 int load_config(MonitorConfig *cfg);
 void monitor_process(MonitorConfig *cfg);
-int uninstall_procmon(void);
 
 #endif
