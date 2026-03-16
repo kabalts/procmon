@@ -1,7 +1,6 @@
 *.o
 procmon
 *.log
-*.conf
 .vscode
 *.swp
 *.bak
