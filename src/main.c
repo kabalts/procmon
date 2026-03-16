@@ -69,12 +69,12 @@ int main(int argc, char *argv[])
         if (show_zombie) 
         {
             printf("==== 僵尸进程详细列表 ====\n");
-            printf("%-8s %-50s %-8s %-10s %-8s\n", "PID", "名称", "状态", "类型", "父进程PID");
+            printf("%-8s %-50s %-8s %-12s %-8s\n", "PID", "名称", "状态", "类型", "父进程PID");
             printf("--------------------------------------------------------------------------------------------\n");
         }
         else 
         {
-            printf("%-8s %-50s %-8s %-10s\n", "PID", "名称", "状态", "类型");
+            printf("%-8s %-50s %-8s %-12s\n", "PID", "名称", "状态", "类型");
             printf("--------------------------------------------------------------------------------------\n");
         }
 
@@ -91,13 +91,13 @@ int main(int argc, char *argv[])
             const char *type = is_sys ? "系统进程" : "用户进程";
             if (show_zombie) 
             {
-                printf("%-8d %-50s %-8s %-10s %-8d\n", 
+                printf("%-8d %-50s %-8s %-12s %-8d\n", 
                     list[i].pid, list[i].name, list[i].state, type, list[i].ppid);
                 zombie_count++;
             } 
             else 
             {
-                printf("%-8d %-50s %-8s %-10s\n", 
+                printf("%-8d %-50s %-8s %-12s\n", 
                     list[i].pid, list[i].name, list[i].state, type);
             }
         }
