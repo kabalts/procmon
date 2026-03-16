@@ -1,7 +1,7 @@
 # 编译器配置
 CC = gcc
 CFLAGS = -Wall -Wextra -Iinclude
-SRC = src/main.c src/process.c src/log.c src/daemon.c src/config.c src/uninstall.c
+SRC = src/main.c src/process.c src/log.c src/daemon.c src/config.c
 OBJ = $(SRC:.c=.o)
 TARGET = procmon
 
