@@ -66,18 +66,16 @@ int main(int argc, char *argv[])
         int cnt = 0;
         list_all_process(list, &cnt);
 
-        // 僵尸进程列表专用表头
         if (show_zombie) 
         {
             printf("==== 僵尸进程详细列表 ====\n");
-            printf("%-8s %-12s %-8s %-10s %-8s\n", "PID", "名称", "状态", "类型", "父进程PID");
-            printf("-----------------------------------------------\n");
+            printf("%-8s %-18s %-8s %-10s %-8s\n", "PID", "名称", "状态", "类型", "父进程PID");
+            printf("--------------------------------------------------------\n");
         }
         else 
         {
-            // 普通进程列表表头
-            printf("%-8s %-12s %-8s %-10s\n", "PID", "名称", "状态", "类型");
-            printf("---------------------------------------------\n");
+            printf("%-8s %-18s %-8s %-10s\n", "PID", "名称", "状态", "类型");
+            printf("----------------------------------------------------\n");
         }
 
         int zombie_count = 0;
@@ -93,15 +91,14 @@ int main(int argc, char *argv[])
             const char *type = is_sys ? "系统进程" : "用户进程";
             if (show_zombie) 
             {
-                // 僵尸进程额外显示父进程PID
-                printf("%-8d %-12s %-8s %-10s %-8d\n", 
-                       list[i].pid, list[i].name, list[i].state, type, list[i].ppid);
+                printf("%-8d %-18.18s %-8s %-10s %-8d\n", 
+                    list[i].pid, list[i].name, list[i].state, type, list[i].ppid);
                 zombie_count++;
             } 
             else 
             {
-                printf("%-8d %-12s %-8s %-10s\n", 
-                       list[i].pid, list[i].name, list[i].state, type);
+                printf("%-8d %-18.18s %-8s %-10s\n", 
+                    list[i].pid, list[i].name, list[i].state, type);
             }
         }
 
