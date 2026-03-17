@@ -130,35 +130,76 @@ int check_zombie_process(ProcInfo *proc_list, int count)
     return zombies;
 }
 
-//  杀死所有僵尸进程
+//  杀死所有僵尸进程的父进程，以强制回收僵尸进程
 int kill_all_zombies(void) 
 {
     ProcInfo list[MAX_PROC];
     int count = 0;
     memset(list, 0, sizeof(list));
-
-    // 获取所有进程列表
     list_all_process(list, &count);
     int cleaned = 0;
 
     for (int i = 0; i < count; i++) 
     {
-        // 判断是否为僵尸进程
-        if (list[i].state[0] == 'Z' || strcmp(list[i].state, "Zombie") == 0) 
+        // 判断僵尸
+        if (list[i].state[0] == 'Z' || strstr(list[i].state, "Zombie"))
         {
-            int ppid = list[i].ppid;
-            if (ppid <= 1) 
-            {
-                continue; // init/systemd 会自动回收，跳过
-            }
+            kill_process(list[i].ppid);
 
-            // 给父进程发送 SIGCHLD，让它主动回收僵尸
-            if (kill(ppid, SIGCHLD) == 0) 
-            {
-                cleaned++;
-            }
+            cleaned++;
         }
     }
 
     return cleaned;
 }
+/*
+
+int kill_all_zombies(void) 
+{
+    ProcInfo list[MAX_PROC];
+    int count = 0;
+    memset(list, 0, sizeof(list));
+    list_all_process(list, &count);
+    int cleaned = 0;
+
+    for (int i = 0; i < count; i++) 
+    {
+        // 判断僵尸
+        if (!(list[i].state[0] == 'Z' || strstr(list[i].state, "Zombie")))
+            continue;
+
+        pid_t zpid = list[i].pid;
+        pid_t ppid = list[i].ppid;
+
+        if (ppid <= 1) continue;
+
+        // 温柔通知（配合的父进程会自己回收）
+        kill(ppid, SIGCHLD);
+        usleep(100000); // 等待 100ms 让父进程处理
+
+        // 再次检查僵尸是否还存在
+        ProcInfo check;
+        memset(&check, 0, sizeof(check));
+
+        //  waitpid(zpid, NULL, WNOHANG) 返回 0 表示僵尸进程仍然存在，返回 -1 或 > 0 表示僵尸进程已被回收或不存在
+        int ret = waitpid(zpid, NULL, WNOHANG);
+
+        // 如果僵尸还在杀死父进程，强制回收僵尸
+        if (ret == 0)
+        {
+            kill(ppid, SIGTERM);
+            
+            printf("父进程不配合，已杀死父进程 %d,回收僵尸 %d\n", ppid, zpid);
+        }
+        else
+        {
+            printf("父进程配合，已自动回收僵尸 %d\n", zpid);
+        }
+
+        cleaned++;
+    }
+
+    return cleaned;
+}
+
+*/
